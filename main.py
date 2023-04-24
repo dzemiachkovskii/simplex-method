@@ -10,9 +10,19 @@ def main():
     print(f'Файл: {sys.argv[1]}\n')
 
     table = get_simplex_table(sys.argv[1])
+    for i in table:
+        for j in i:
+            print(int(j), end='\t')
+        print()
 
 
 def get_simplex_table(path):
+    """
+    Returns
+    1) Simplex table (numpy array);
+    2) Boolean, indicating whether we are looking for the maximum or minimum;
+    3) Expected result, if passed;
+    """
     with open(path, 'r') as f:
         func = f.readline()[:-1]
         restrictions = []
@@ -49,16 +59,19 @@ def get_simplex_table(path):
         coeffs.append(line)
 
     table = np.empty(shape=(len(coeffs) + 1, len(coeffs[0]) + 1))
+    table.fill(0)
 
-    print(*table, sep='\n\n')
+    # filling all rows except the last one
+    first_col = ref_plan[len(func):]
+    for i in range(len(coeffs)):
+        line = [first_col[i]] + coeffs[i]
+        for j in range(len(table[i])):
+            table[i][j] = int(line[j])
+    # filling the last row
+    for i in range(len(func)):
+        table[-1][i + 1] = func[i]
 
-    print(f'max? {searching_max}\n')
-    print(f'func = {func}\n')
-    print(f'ref plan: {ref_plan}\n')
-    print(f'coeffs: {coeffs}\n')
-    print(f'restrictions: {restrictions}\n')
-
-    return [['af', 'af'], ['af', 'af']]
+    return table, searching_max
 
 
 if __name__ == '__main__':
