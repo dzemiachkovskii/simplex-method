@@ -25,9 +25,9 @@ def get_simplex_table(path):
     searching_max = 'max' in func
 
     func = func[func.find('=') + 1:func.find('->')].replace(' ', '')
-    func = re.findall(r'-*[0-9]*x[0-9]+', func)
+    func = re.findall(r'-*\d*x\d+', func)
     func = [arg[:arg.find('x')] for arg in func]
-    func = [arg if re.match(r'[0-9]+', arg) else arg + '1' for arg in func]
+    func = [arg if re.match(r'.*\d+', arg) else arg + '1' for arg in func]
 
     print(searching_max, func, restrictions, results, sep='\n\n')
 
