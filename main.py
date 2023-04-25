@@ -9,7 +9,8 @@ def main():
         exit(1)
     print(f'Файл: {sys.argv[1]}\n')
 
-    table = get_simplex_table(sys.argv[1])
+    table, searching_max, expected_results = get_simplex_table(sys.argv[1])
+
     for i in table:
         for j in i:
             print(int(j), end='\t')
@@ -71,7 +72,7 @@ def get_simplex_table(path):
     for i in range(len(func)):
         table[-1][i + 1] = func[i]
 
-    return table, searching_max
+    return table, searching_max, results
 
 
 if __name__ == '__main__':
