@@ -8,7 +8,6 @@ def main():
         print('Укажите файл с исходными данными!')
         exit(1)
     print('\nСИМПЛЕКС-МЕТОД ДЛЯ ДВУХ ПЕРЕМЕННЫХ')
-    print(f'Файл: {sys.argv[1]}\n')
 
     table, searching_max, expected_results = get_simplex_table(sys.argv[1])
     simplex_method(table, searching_max)
@@ -21,6 +20,7 @@ def get_simplex_table(path):
     2) Boolean, indicating whether we are looking for the maximum or minimum;
     3) Expected result, if passed;
     """
+    print(f'Файл с исходными данными: {path}\n')
     with open(path, 'r') as f:  # reading from file
         func = f.readline()[:-1]
         restrictions = []
@@ -82,6 +82,13 @@ def simplex_method(table: np.ndarray, searching_max):
     print('ИЩЕМ ' + ('МАКСИМУМ' if searching_max else 'МИНИМУМ'))
     print('\nСоставим симплекс-таблицу:')
     draw_table(table)
+    iteration = 0
+    basis = [f'x{i + 3}' for i in range(len(table) - 1)] + ['F']  # ['x3', 'x4', 'x5', 'F'] etc
+    print(basis)
+    while True:
+        if not check_stop(table[-1], searching_max):
+            break
+    print_results(table)
 
 
 def draw_table(table):
@@ -99,6 +106,21 @@ def draw_table(table):
         for el in line:
             print(f'| {el: <{width - 4}} |', end='')
         print(sep)
+
+
+def check_stop(row, searching_max):
+    satisfies = (lambda x: x >= 0) if searching_max else (lambda x: x <= 0)
+    for el in row:
+        if not satisfies(el):
+            return False
+    return True
+
+
+def print_results(table):
+    x1 = table[0][0]
+    x2 = table[1][0]
+    func = table[3][0]
+    print(f'РЕЗУЛЬТАТ:\nF = {func}\nx1 = {x1}\nx2 = {x2}')
 
 
 if __name__ == '__main__':
