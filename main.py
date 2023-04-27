@@ -81,28 +81,54 @@ def get_simplex_table(path):
 def simplex_method(table: np.ndarray, searching_max):
     print('ИЩЕМ ' + ('МАКСИМУМ' if searching_max else 'МИНИМУМ'))
     print('\nСоставим симплекс-таблицу:')
-    draw_table(table)
+
     iteration = 0
     basis = [f'x{i + 3}' for i in range(len(table) - 1)] + ['F']  # ['x3', 'x4', 'x5', 'F'] etc
-    print(basis)
+    draw_table(basis, table, iteration)
     while True:
-        if not check_stop(table[-1], searching_max):
+        if check_stop(table[-1], searching_max):
             break
+        pivot, pivot_i, pivot_j = get_pivot(table, searching_max)
+        new_table = np.copy(table)
+        new_table[[0, pivot_i]] = new_table[[pivot_i, 0]]  # moving pivot row to top
+        for j in range(len(new_table[0])):
+            new_table[0][j] /= pivot  # dividing all row by pivot
+        for i in range(1, len(table)):
+            for j in range(len(table[i])):
+                if j == pivot_j:
+                    new_table[i][j] = 0
+                else:
+                    matrix = [
+                        [table[i][j], table[i][pivot_j]],
+                        [table[pivot_i][j], table[pivot_i][pivot_j]]
+                    ]
+                    new_table[i][j] = ((matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])) / pivot
+                    print(
+                        f'({matrix[0][0]} * {matrix[1][1]}) - ({matrix[0][1]} * {matrix[1][0]}) / {pivot} = '
+                        f'({matrix[0][0] * matrix[1][1]} - {matrix[0][1] * matrix[1][0]}) / {pivot} = '
+                        f'{(matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])} / {pivot} = '
+                        f'{((matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])) / pivot}')
+        table = new_table
+        iteration += 1
+        draw_table(basis, table, iteration)
     print_results(table)
 
 
-def draw_table(table):
-    width = 16
-    header = ['Базис', 'План'] + [f'x{i}' for i in range(1, len(table[0] + 1))] + ['Оц. столбец']
+def draw_table(basis, table, iteration):
+    width = 25
+    header = ['Базис', 'План'] + [f'x{i}' for i in range(1, len(table[0] + 1))]
     sep = '\n' + '=' * width * len(header)
+    basis = basis[::-1]
 
+    print(sep)
+    print(f'{iteration}-я итерация')
     print(sep[1:])
     for el in header:
         print(f'| {el: <{width - 4}} |', end='')
     print(sep)
     for i, row in enumerate(table):
-        line_name = 'F' if i == len(table[0]) - 3 else f'x{i + 3}'
-        line = (line_name, *row, '')
+        line_name = basis.pop()
+        line = (line_name, *row)
         for el in line:
             print(f'| {el: <{width - 4}} |', end='')
         print(sep)
@@ -119,8 +145,28 @@ def check_stop(row, searching_max):
 def print_results(table):
     x1 = table[0][0]
     x2 = table[1][0]
-    func = table[3][0]
-    print(f'РЕЗУЛЬТАТ:\nF = {func}\nx1 = {x1}\nx2 = {x2}')
+    func = table[-1][0]
+    print(f'\nРЕЗУЛЬТАТ:\nF = {func}\nx1 = {x1}\nx2 = {x2}')
+
+
+def get_pivot(table, searching_max):
+    pivot_i = 0
+    pivot_j = 0
+    el_in_func_row = min(table[-1]) if searching_max else max(table[-1])  # finding pivot column
+    for j, el in enumerate(table[-1]):
+        if el == el_in_func_row:
+            pivot_j = j
+            break
+    eval_column = [table[i][0] / table[i][pivot_j] if table[i][pivot_j] > 0 else table[i][0] for i in
+                   range(len(table) - 1)]  # creating evaluation column
+    min_el_in_eval_col = eval_column[0]
+    for i, el in enumerate(eval_column):  # finding pivot row
+        if el < min_el_in_eval_col:
+            min_el_in_eval_col = el
+            pivot_i = i
+    pivot = table[pivot_i][pivot_j]
+    print(pivot, pivot_i, pivot_j)
+    return pivot, pivot_i, pivot_j
 
 
 if __name__ == '__main__':
