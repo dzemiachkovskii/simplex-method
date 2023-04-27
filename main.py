@@ -135,7 +135,7 @@ def draw_table(basis, table, iteration):
 
 
 def check_stop(row, searching_max):
-    satisfies = (lambda x: x >= 0) if searching_max else (lambda x: x <= 0)
+    satisfies = (lambda x: x >= -0) if searching_max else (lambda x: x <= 0)
     for el in row:
         if not satisfies(el):
             return False
@@ -157,11 +157,11 @@ def get_pivot(table, searching_max):
         if el == el_in_func_row:
             pivot_j = j
             break
-    eval_column = [table[i][0] / table[i][pivot_j] if table[i][pivot_j] > 0 else table[i][0] for i in
+    eval_column = [table[i][0] / table[i][pivot_j] if table[i][pivot_j] > 0 else 999999999999999999 for i in
                    range(len(table) - 1)]  # creating evaluation column
-    min_el_in_eval_col = eval_column[0]
+    min_el_in_eval_col = max(eval_column)
     for i, el in enumerate(eval_column):  # finding pivot row
-        if el < min_el_in_eval_col:
+        if el < abs(min_el_in_eval_col):
             min_el_in_eval_col = el
             pivot_i = i
     pivot = table[pivot_i][pivot_j]
