@@ -87,8 +87,7 @@ def simplex_method(table: np.ndarray, searching_max):
     print('\nСоставим симплекс-таблицу:')
 
     iteration = 0
-    basis = [f'x{i + 3}' for i in range(len(table) - 1)] + ['F']  # ['x3', 'x4', 'x5', 'F'] etc
-    print(type(basis), basis, sep=' ')
+    basis = [f'x{i + 3}' for i in range(len(table) - 1)] + ['F']  # ['x3', 'x4', 'x5', 'F'] etc`
     draw_table(basis, table, iteration)
     while True:
         if check_stop(table[-1], searching_max):
