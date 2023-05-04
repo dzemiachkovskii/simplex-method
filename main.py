@@ -10,7 +10,9 @@ def main():
     print('\nСИМПЛЕКС-МЕТОД ДЛЯ ДВУХ ПЕРЕМЕННЫХ')
 
     table, searching_max, expected_results = get_simplex_table(sys.argv[1])
-    simplex_method(table, searching_max)
+    results = simplex_method(table, searching_max)
+    print(f'Результат работы программы:\n{results}\n')
+    print(f'Ожидаемый результат:\n{expected_results}')
 
 
 def get_simplex_table(path):
@@ -62,6 +64,8 @@ def get_simplex_table(path):
         arguments += artificial_variables
         coeffs.append(arguments)
 
+    results = '\n'.join([el.strip().replace('\n', '') for el in results])
+
     table = np.empty(shape=(len(coeffs) + 1, len(coeffs[0]) + 1))
     table.fill(0)
 
@@ -84,34 +88,47 @@ def simplex_method(table: np.ndarray, searching_max):
 
     iteration = 0
     basis = [f'x{i + 3}' for i in range(len(table) - 1)] + ['F']  # ['x3', 'x4', 'x5', 'F'] etc
+    print(type(basis), basis, sep=' ')
     draw_table(basis, table, iteration)
     while True:
         if check_stop(table[-1], searching_max):
             break
-        pivot, pivot_i, pivot_j = get_pivot(table, searching_max)
+        if iteration > 5:
+            print('Больше 5 итераций. Возможно, всё сломалось...')
+        try:
+            pivot, pivot_i, pivot_j = get_pivot(table, searching_max)
+        except ValueError:
+            return 'Функция стремится к ' + ('+∞' if searching_max else '-∞')
+        basis[pivot_i] = f'x{pivot_j}'
         new_table = np.copy(table)
-        new_table[[0, pivot_i]] = new_table[[pivot_i, 0]]  # moving pivot row to top
-        for j in range(len(new_table[0])):
-            new_table[0][j] /= pivot  # dividing all row by pivot
-        for i in range(1, len(table)):
+
+        for j in range(len(new_table[pivot_i])):  # dividing all elements in pivot row by pivot
+            new_table[pivot_i][j] /= pivot
+
+        for i in range(len(table)):
+            if i == pivot_i:  # skipping pivot row
+                continue
             for j in range(len(table[i])):
                 if j == pivot_j:
-                    new_table[i][j] = 0
+                    new_table[i][j] = 0  # if element is in the pivot column — assign it to zero
                 else:
                     matrix = [
                         [table[i][j], table[i][pivot_j]],
                         [table[pivot_i][j], table[pivot_i][pivot_j]]
                     ]
+
                     new_table[i][j] = ((matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])) / pivot
-                    print(
-                        f'({matrix[0][0]} * {matrix[1][1]}) - ({matrix[0][1]} * {matrix[1][0]}) / {pivot} = '
-                        f'({matrix[0][0] * matrix[1][1]} - {matrix[0][1] * matrix[1][0]}) / {pivot} = '
-                        f'{(matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])} / {pivot} = '
-                        f'{((matrix[0][0] * matrix[1][1]) - (matrix[0][1] * matrix[1][0])) / pivot}')
         table = new_table
         iteration += 1
         draw_table(basis, table, iteration)
-    print_results(table)
+    x1 = table[
+        basis.index('x1')
+    ][0]
+    x2 = table[
+        basis.index('x2')
+    ][0]
+    func = table[-1][0]
+    return f'F = {func}\nx1 = {x1}\nx2 = {x2}'
 
 
 def draw_table(basis, table, iteration):
@@ -142,13 +159,6 @@ def check_stop(row, searching_max):
     return True
 
 
-def print_results(table):
-    x1 = table[0][0]
-    x2 = table[1][0]
-    func = table[-1][0]
-    print(f'\nРЕЗУЛЬТАТ:\nF = {func}\nx1 = {x1}\nx2 = {x2}')
-
-
 def get_pivot(table, searching_max):
     pivot_i = 0
     pivot_j = 0
@@ -159,13 +169,15 @@ def get_pivot(table, searching_max):
             break
     eval_column = [table[i][0] / table[i][pivot_j] if table[i][pivot_j] > 0 else 999999999999999999 for i in
                    range(len(table) - 1)]  # creating evaluation column
+    if all(el == 999999999999999999 for el in eval_column):
+        raise ValueError('no pivot')
     min_el_in_eval_col = max(eval_column)
     for i, el in enumerate(eval_column):  # finding pivot row
         if el < abs(min_el_in_eval_col):
             min_el_in_eval_col = el
             pivot_i = i
     pivot = table[pivot_i][pivot_j]
-    print(pivot, pivot_i, pivot_j)
+    print(f'Разрешающий элемент с индексами [{pivot_i}][{pivot_j}] = {pivot}')
     return pivot, pivot_i, pivot_j
 
 
