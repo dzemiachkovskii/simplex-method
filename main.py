@@ -131,7 +131,7 @@ def simplex_method(table: np.ndarray, searching_max):
 
 
 def draw_table(basis, table, iteration):
-    width = 25
+    width = 16
     header = ['Базис', 'План'] + [f'x{i}' for i in range(1, len(table[0] + 1))]
     sep = '\n' + '=' * width * len(header)
     basis = basis[::-1]
@@ -146,6 +146,8 @@ def draw_table(basis, table, iteration):
         line_name = basis.pop()
         line = (line_name, *row)
         for el in line:
+            if type(el) is not str:
+                el = round(el, 5)
             print(f'| {el: <{width - 4}} |', end='')
         print(sep)
 
@@ -176,7 +178,7 @@ def get_pivot(table, searching_max):
             min_el_in_eval_col = el
             pivot_i = i
     pivot = table[pivot_i][pivot_j]
-    print(f'Разрешающий элемент с индексами [{pivot_i}][{pivot_j}] = {pivot}')
+    print(f'Разрешающий элемент с индексами [{pivot_i}][{pivot_j}] = {round(pivot, 5)}')
     return pivot, pivot_i, pivot_j
 
 
